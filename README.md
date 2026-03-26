@@ -22,4 +22,4 @@ See the [Contribution Guide](https://pcsx2.net/docs/contributing/) for more info
 
 ## Old 3DS Compatibility
 
-No, Old 3DS systems (those around 2011) won't work for ClownStation, expect crashes and slower speeds unlike New 3DS.
+No, Old 3DS systems (those around 2011-2013, before New 3DS came out by 2014) won't work for ClownStation, expect crashes and slower speeds unlike New 3DS.
