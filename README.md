@@ -23,3 +23,6 @@ See the [Contribution Guide](https://pcsx2.net/docs/contributing/) for more info
 ## Old 3DS Compatibility
 
 No, Old 3DS systems (those around 2011-2013, before New 3DS came out by 2014) won't work for ClownStation, expect crashes and slower speeds unlike New 3DS.
+
+
+If I could, I would make ClownStation bootable soon on Old 3DS, with the ability to run Hello World sample you make on PS2DEV, but is not recommended for heavy homebrew or commercial games.
