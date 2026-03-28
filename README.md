@@ -30,4 +30,4 @@ If I could, I would make ClownStation bootable soon on Old 3DS, with the ability
 
 ## Code
 
-I dunno, but I think I'll remain to this until I get the emulator to Nintendo 3DS working.
+I dunno, but I think I'll remain to this until I get the emulator to Nintendo 3DS working... if I could...
