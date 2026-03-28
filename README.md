@@ -7,7 +7,7 @@ ClownStation is a free and open-source PlayStation 2 (PS2) emulator for the Nint
 
 The Base, PCSX2, has been in development for more than 20 years. Past versions could only run a few public domain game demos, but newer versions can run most games at full speed, including popular titles such as Final Fantasy X and Devil May Cry 3. Visit the [PCSX2 compatibility list](https://pcsx2.net/compat/) to check the latest compatibility status of games (with more than 2500 titles tested).
 
-Still no builds yet, but I could make in a, say, ASAP.
+Release is out, but in a very early 0.0.01. Check builds [here](https://github.com/Bastian2024/pcsx2-3ds/releases).
 
 ## System Requirements
 
@@ -27,3 +27,7 @@ No, Old 3DS systems (those around 2011-2013, before New 3DS came out by 2014) wo
 
 
 If I could, I would make ClownStation bootable soon on Old 3DS, with the ability to run Hello World sample you make on PS2DEV, but is not recommended for heavy homebrew or commercial games.
+
+## Code
+
+I dunno, but I think I'll remain to this until I get the emulator to Nintendo 3DS working.
