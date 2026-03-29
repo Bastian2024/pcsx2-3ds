@@ -11,7 +11,7 @@ Check ClownStation builds [here](https://github.com/Bastian2024/pcsx2-3ds/releas
 
 ## System Requirements
 
-The OG PCSX2 supports Windows, Linux, and Mac platforms, but ClownStation supports New 3DS only. PCSX2's [setup documentation page](https://pcsx2.net/docs/setup/requirements) contains additional details on software and hardware requirements.
+The OG PCSX2 supports Windows, Linux, and Mac platforms, but ClownStation supports New 3DS only, somewhere also for Old 3DS. PCSX2's [setup documentation page](https://pcsx2.net/docs/setup/requirements) contains additional details on software and hardware requirements.
 
 Please note that a BIOS dump from a legitimately-owned PS2 console is required to use the emulator. For more information, visit [this page](https://pcsx2.net/docs/setup/bios/).
 
