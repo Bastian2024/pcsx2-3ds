@@ -31,3 +31,13 @@ If I could, I would make ClownStation bootable soon on Old 3DS, with the ability
 ## Code
 
 I dunno, but I think I'll remain to this until I get the emulator to Nintendo 3DS working... if I could...
+
+## Star History
+
+<a href="https://www.star-history.com/?repos=Bastian2024%2Fpcsx2-3ds&type=date&legend=bottom-right">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=Bastian2024/pcsx2-3ds&type=date&theme=dark&logscale&legend=bottom-right" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=Bastian2024/pcsx2-3ds&type=date&logscale&legend=bottom-right" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=Bastian2024/pcsx2-3ds&type=date&logscale&legend=bottom-right" />
+ </picture>
+</a>
