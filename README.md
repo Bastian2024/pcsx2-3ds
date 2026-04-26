@@ -1,5 +1,5 @@
 # ClownStation
-[![Discord Server](https://img.shields.io/discord/309643527816609793?color=%FF00FFFA&label=ClownStation%20Discord&logo=discord&logoColor=white)](https://discord.com/invite/cj4yaJBfQK)
+[![Discord Server](https://img.shields.io/discord/309643527816609793?color=%23FF00FF&label=ClownStation%20Discord&logo=discord&logoColor=white)](https://discord.com/invite/cj4yaJBfQK)
 
 ClownStation is a experimental, work-in-progress, Free and Open-Source PlayStation 2 (PS2) emulator for the Nintendo 3DS based from PCSX2. Its purpose is to emulate the PS2's hardware, using a combination of MIPS CPU [Interpreters](<https://en.wikipedia.org/wiki/Interpreter_(computing)>), [Recompilers](https://en.wikipedia.org/wiki/Dynamic_recompilation) and a [Virtual Machine](https://en.wikipedia.org/wiki/Virtual_machine) which manages hardware states and PS2 system memory. This allows you to play PS2 games on your New 3DS, with many additional features and benefits.
 
