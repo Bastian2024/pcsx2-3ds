@@ -1,6 +1,6 @@
 # Contribute ClownStation project and make it reach stable 1.0.0
 
-To contribute the ClownStation project (alongside supporting PCSX2), you need skills on making the emulator workable. You need the following tools:
+To contribute the ClownStation project (alongside supporting PCSX2), you need skills on making the emulator workable. You need the following:
 
 - devkitPro (has libctru, devkitARM and examples builtin)
 - libctru
