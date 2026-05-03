@@ -19,7 +19,7 @@ Please note that a BIOS dump from a legitimately-owned PS2 console is required t
 
 The original PCSX2 supports translation into other languages using [Crowdin](https://crowdin.com/project/pcsx2-emulator).
 
-See the [Contribution Guide](https://pcsx2.net/docs/contributing/) for more info on how to contribute.
+See the [Contribution Guide](https://github.com/Bastian2024/pcsx2-3ds/blob/master/CONTRIBUTING.md) for more info on how to contribute. Also reminder to get the tools!
 
 ## Old 3DS Compatibility
 
