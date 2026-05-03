@@ -461,6 +461,9 @@ struct PSMain
 
 	float4 sample_c_af(float2 uv, float uv_w)
 	{
+		// HW sampler will reject bad UVs, match that here.
+		uv = any(isnan(uv) | isinf(uv)) ? float2(0, 0) : uv;
+
 		// Below taken from https://microsoft.github.io/DirectX-Specs/d3d/archive/D3D11_3_FunctionalSpec.htm#7.18.11%20LOD%20Calculations
 		// With guidance from https://pema.dev/2025/05/09/mipmaps-too-much-detail/
 		float2 sz = float2(get_tex_dims());
@@ -1431,10 +1434,7 @@ struct PSMain
 				uint2 denorm_TA = uint2(cb.ta * 255.5f);
 				
 				C.rb = (denorm_c.r >> 3) | (((denorm_c.g >> 3) & 0x7) << 5);
-				if (denorm_c.a & 0x80)
-					C.ga = (denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.y & 0x80);
-				else
-					C.ga = (denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.x & 0x80);
+				C.ga = (denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.x & 0x80);
 			}
 			else if (PS_SHUFFLE_ACROSS)
 			{

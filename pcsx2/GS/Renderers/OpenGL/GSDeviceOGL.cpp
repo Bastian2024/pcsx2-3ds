@@ -2743,7 +2743,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	}
 
 	// Destination Alpha Setup
-	const bool multidraw_fb_copy = m_features.multidraw_fb_copy && (config.require_one_barrier || config.require_full_barrier);
+	const bool need_barrier = config.require_one_barrier || (config.require_full_barrier && m_features.feedback_loops());
 	switch (config.destination_alpha)
 	{
 		case GSHWDrawConfig::DestinationAlphaMode::Off:
@@ -2758,7 +2758,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 			}
 			break;
 		case GSHWDrawConfig::DestinationAlphaMode::StencilOne:
-			if (m_features.texture_barrier || multidraw_fb_copy)
+			if (need_barrier)
 			{
 				// Cleared after RT bind.
 				break;
@@ -2931,20 +2931,30 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 		glTextureBarrier();
 	}
 
-	if (draw_rt && (config.require_one_barrier || (config.require_full_barrier && m_features.multidraw_fb_copy) || (config.tex && config.tex == config.rt)) &&
-		!m_features.texture_barrier)
+	const bool tex_is_fb = config.tex && config.tex == draw_rt;
+	const bool rt_feedbackloop_pass1 = config.ps.IsFeedbackLoopRT() || tex_is_fb;
+	const bool rt_feedbackloop_pass2 = config.alpha_second_pass.ps.IsFeedbackLoopRT() || tex_is_fb;
+	if (draw_rt && !m_features.texture_barrier && (((config.require_one_barrier || (config.require_full_barrier && m_features.multidraw_fb_copy)) &&
+		(rt_feedbackloop_pass1 || rt_feedbackloop_pass2))))
 	{
+		config.require_one_barrier |= (tex_is_fb && !config.require_full_barrier);
+		config.alpha_second_pass.require_one_barrier |= (tex_is_fb && !config.require_full_barrier);
+
 		// Requires a copy of the RT.
 		draw_rt_clone = CreateTexture(rtsize.x, rtsize.y, 1, draw_rt->GetFormat(), true);
+
 		if (!draw_rt_clone)
 			Console.Warning("GL: Failed to allocate temp texture for RT copy.");
 	}
 
-	if (draw_ds && (config.require_one_barrier || (config.require_full_barrier && m_features.multidraw_fb_copy)) &&
-		!m_features.texture_barrier && m_features.depth_feedback && config.ps.IsFeedbackLoopDepth())
+	const bool ds_feedbackloop_pass1 = config.ps.IsFeedbackLoopDepth();
+	const bool ds_feedbackloop_pass2 = config.alpha_second_pass.ps.IsFeedbackLoopDepth();
+	if (draw_ds && !m_features.texture_barrier && m_features.depth_feedback &&
+		(config.require_one_barrier || (config.require_full_barrier && m_features.multidraw_fb_copy)) && (ds_feedbackloop_pass1 || ds_feedbackloop_pass2))
 	{
 		// Requires a copy of the DS.
 		draw_ds_clone = CreateTexture(rtsize.x, rtsize.y, 1, draw_ds->GetFormat(), true);
+
 		if (!draw_ds_clone)
 			Console.Warning("GL: Failed to allocate temp texture for DS copy.");
 	}
@@ -2954,13 +2964,13 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	SetupOM(config.depth);
 
 	// Clear stencil as close as possible to the RT bind, to avoid framebuffer swaps.
-	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::StencilOne && (m_features.texture_barrier || multidraw_fb_copy))
+	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::StencilOne && need_barrier)
 	{
 		constexpr GLint clear_color = 1;
 		glClearBufferiv(GL_STENCIL, 0, &clear_color);
 	}
 
-	SendHWDraw(config, draw_rt_clone, draw_rt, draw_ds_clone, draw_ds,
+	SendHWDraw(config, rt_feedbackloop_pass1 ? draw_rt_clone : nullptr, draw_rt, ds_feedbackloop_pass1 ? draw_ds_clone : nullptr, draw_ds,
 		config.require_one_barrier, config.require_full_barrier);
 
 	if (config.blend_multi_pass.enable)
@@ -3006,9 +3016,10 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 		{
 			OMSetBlendState();
 		}
+		const bool one_barrier = config.alpha_second_pass.require_one_barrier && m_features.feedback_loops();
 		SetupOM(config.alpha_second_pass.depth);
-		SendHWDraw(config, draw_rt_clone, draw_rt, draw_ds_clone, draw_ds,
-			m_features.texture_barrier ? config.alpha_second_pass.require_one_barrier : false, config.alpha_second_pass.require_full_barrier);
+		SendHWDraw(config, rt_feedbackloop_pass2 ? draw_rt_clone : nullptr, draw_rt, ds_feedbackloop_pass2 ? draw_ds_clone : nullptr, draw_ds,
+			one_barrier, config.alpha_second_pass.require_full_barrier);
 	}
 
 	if (colclip_rt)

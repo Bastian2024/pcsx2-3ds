@@ -834,7 +834,7 @@ void GSRendererHW::DetectTextureShuffleSecondPass(GSTextureCache::Target* rt, GS
 		// path helps to maintain correct sizes in the texture cache. Occurs in NFS Most Wanted.
 
 		if (PRIM->TME &&
-			(m_vt.m_primclass == GS_SPRITE_CLASS || m_vt.m_primclass == GS_TRIANGLE_CLASS && TrianglesAreQuads(true)) &&
+			((m_vt.m_primclass == GS_SPRITE_CLASS || m_vt.m_primclass == GS_TRIANGLE_CLASS) && TrianglesAreQuads(true)) &&
 			(tex_psm.bpp == 16) && (frame_psm.bpp == 16) && rt->m_32_bits_fmt && tex->m_32_bits_fmt)
 		{
 			GL_INS("HW: Texture shuffle detection (2): Passed (HACK: reinterpreting both source/RT as 16 bit).");
@@ -5888,24 +5888,31 @@ void GSRendererHW::EmulateDATESelectMethod(DATEOptions& date_options, GSTextureC
 	if (features.framebuffer_fetch)
 	{
 		// Full DATE is "free" with framebuffer fetch. The barrier gets cleared below.
+		GL_PERF("DATE: Accurate with framebuffer fetch");
 		date_options.barrier = true;
 		m_conf.require_full_barrier = true;
 	}
-	else if (IsCoverageAlphaSupported())
+	else if (features.feedback_loops() && IsCoverageAlphaSupported())
 	{
 		// We're using AA1 for this draw so use only full barrier DATE, to avoid the complications
 		// with stencil/primid setup with AA1 vertex shaders. AA1 triangles usually require full barriers anyway.
+		GL_PERF("DATE: Accurate with IsCoverageAlphaSupported");
 		date_options.barrier = true;
 		m_conf.require_full_barrier = true;
 	}
-	else if ((features.texture_barrier && m_prim_overlap == PRIM_OVERLAP_NO) || m_texture_shuffle)
+	else if ((features.texture_barrier && m_prim_overlap == PRIM_OVERLAP_NO))
 	{
-		GL_PERF("DATE: Accurate with %s", (features.texture_barrier && m_prim_overlap == PRIM_OVERLAP_NO) ? "no overlap" : "texture shuffle");
-		if (features.texture_barrier)
-		{
-			m_conf.require_full_barrier = true;
-			date_options.barrier = true;
-		}
+		// We only enable this for texture barriers as it's fast, multidraw fb copy might be slower.
+		GL_PERF("DATE: Accurate with no overlap");
+		m_conf.require_full_barrier = true;
+		date_options.barrier = true;
+	}
+	else if (features.feedback_loops() && m_texture_shuffle)
+	{
+		// Ensure texture shuffles run with full barrier DATE.
+		GL_PERF("DATE: Accurate with texture shuffle");
+		m_conf.require_full_barrier = true;
+		date_options.barrier = true;
 	}
 	// When Blending is disabled and Edge Anti Aliasing is enabled,
 	// the output alpha is Coverage (which we force to 128) so DATE will fail/pass guaranteed on second pass.
@@ -5989,7 +5996,7 @@ void GSRendererHW::EmulateDATEGetConfig(DATEOptions& date_options, bool scale_rt
 
 	// Always swap DATE with DATE_BARRIER if we have barriers on when alpha write is masked.
 	// This is always enabled on VK/GL/DX12 but not on DX11 as copies are slow so we can selectively enable it like now.
-	if (!m_conf.colormask.wa && (m_conf.require_one_barrier || m_conf.require_full_barrier))
+	if (!m_conf.colormask.wa && (m_conf.require_one_barrier || (m_conf.require_full_barrier && features.feedback_loops())))
 		date_options.barrier = true;
 
 	if (m_conf.ps.scanmsk & 2)
@@ -6009,17 +6016,25 @@ void GSRendererHW::EmulateDATEGetConfig(DATEOptions& date_options, bool scale_rt
 	else
 		m_conf.datm = static_cast<SetDATM>(m_cached_ctx.TEST.DATM);
 
-	if (m_conf.destination_alpha >= GSHWDrawConfig::DestinationAlphaMode::Stencil &&
-		m_conf.destination_alpha <= GSHWDrawConfig::DestinationAlphaMode::StencilOne && !m_conf.ds)
+	// DATE Stencil always needs a depth stencil texture.
+	const bool date_stencil_needs_ds = !m_conf.ds &&
+		(m_conf.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::Stencil || m_conf.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::StencilOne);
+	if (date_stencil_needs_ds)
 	{
-		const bool is_one_barrier = (features.texture_barrier && m_conf.require_full_barrier &&
-			(m_prim_overlap == PRIM_OVERLAP_NO || m_conf.ps.shuffle || m_channel_shuffle));
+		const bool need_barrier = m_conf.require_one_barrier || (m_conf.require_full_barrier && features.feedback_loops());
 		if ((temp_ds.reset(g_gs_device->CreateDepthStencil(m_conf.rt->GetWidth(), m_conf.rt->GetHeight(),
 			GSTexture::Format::DepthStencil, false)), temp_ds))
 		{
 			m_conf.ds = temp_ds.get();
 		}
-		else if (features.primitive_id && !(m_conf.ps.scanmsk & 2) && (!m_conf.require_full_barrier || is_one_barrier))
+		else if (need_barrier)
+		{
+			date_options.stencil_one = false;
+			date_options.barrier = true;
+			m_conf.destination_alpha = GSHWDrawConfig::DestinationAlphaMode::Full;
+			DevCon.Warning("HW: Depth buffer creation failed for Stencil Date. Fallback to Full.");
+		}
+		else if (features.primitive_id && !(m_conf.ps.scanmsk & 2))
 		{
 			date_options.stencil_one = false;
 			date_options.primid = true;
@@ -6041,7 +6056,7 @@ void GSRendererHW::EmulateDATEGetConfig(DATEOptions& date_options, bool scale_rt
 	}
 	else if (date_options.stencil_one)
 	{
-		const bool multidraw_fb_copy = features.multidraw_fb_copy && (m_conf.require_one_barrier || m_conf.require_full_barrier);
+		const bool multidraw_fb_copy = m_conf.require_one_barrier || (m_conf.require_full_barrier && features.multidraw_fb_copy);
 		if (features.texture_barrier || multidraw_fb_copy)
 		{
 			m_conf.require_one_barrier = true;
@@ -6150,7 +6165,7 @@ void GSRendererHW::DetermineBarriers(GSTextureCache::Target* rt)
 
 		// If we use depth feedback directly, we must use barriers for the depth texture.
 		// If we use depth-as-color feedback, then FB fetch can be used for depth also.
-		bool need_barriers_for_depth = m_conf.ps.IsFeedbackLoopDepth() && features.depth_feedback;
+		const bool need_barriers_for_depth = m_conf.ps.IsFeedbackLoopDepth() && features.depth_feedback;
 
 		if (!need_barriers_for_depth)
 		{
@@ -6171,7 +6186,6 @@ void GSRendererHW::DetermineBarriers(GSTextureCache::Target* rt)
 	else if (!features.feedback_loops())
 	{
 		// These shouldn't be enabled if texture barriers aren't supported, make sure they are off.
-		m_conf.ps.write_rg = 0;
 		m_conf.require_full_barrier = false;
 	}
 
@@ -6247,7 +6261,7 @@ void GSRendererHW::EmulateTextureShuffleAndFbmask(GSTextureCache::Target* rt, GS
 
 		// If date is enabled you need to test the green channel instead of the alpha channel.
 		// Only enable this code in DATE mode to reduce the number of shaders.
-		m_conf.ps.write_rg = (process_rg & SHUFFLE_WRITE) && features.feedback_loops() && m_cached_ctx.TEST.DATE;
+		m_conf.ps.write_rg = (process_rg & SHUFFLE_WRITE) &&  m_cached_ctx.TEST.DATE;
 
 		m_conf.ps.real16src = m_texture_shuffle.real_16_bit_source;
 
@@ -6901,7 +6915,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, DATEOptio
 	{
 		case AccBlendLevel::Maximum:
 			sw_blending |= true;
-			accumulation_blend &= (GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].bpp == 32);
+			accumulation_blend &= !barriers_supported || (GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].bpp == 32);
 			[[fallthrough]];
 		case AccBlendLevel::Full:
 			sw_blending |= m_conf.ps.blend_a != m_conf.ps.blend_b && alpha_c0_high_max_one;
@@ -6920,7 +6934,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, DATEOptio
 		case AccBlendLevel::Basic:
 		default:
 			// Prefer sw blend if possible.
-			color_dest_blend &= !(m_channel_shuffle || m_conf.ps.dither);
+			color_dest_blend &= !m_conf.ps.dither;
 			color_dest_blend2 &= !(prefer_sw_blend || m_conf.ps.dither);
 			blend_zero_to_one_range &= !(prefer_sw_blend || m_conf.ps.dither);
 			accumulation_blend &= !prefer_sw_blend;
@@ -8851,7 +8865,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	}
 
 	// Similar to IsRTWritten(), check if the rt will change.
-	const bool no_rt = !rt || !(m_conf.colormask.wrgba || m_channel_shuffle);
+	const bool no_rt = !rt || m_conf.colormask.wrgba == 0;
 	const bool no_ds = !ds ||
 		// Depth will be written through the RT.
 		(!no_rt && m_cached_ctx.FRAME.FBP == m_cached_ctx.ZBUF.ZBP && !PRIM->TME && m_cached_ctx.ZBUF.ZMSK == 0 &&

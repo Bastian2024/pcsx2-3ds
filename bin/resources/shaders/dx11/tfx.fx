@@ -263,6 +263,9 @@ float manual_lod(float uv_w)
 #if PS_ANISOTROPIC_FILTERING > 1
 float4 sample_c_af(float2 uv, float uv_w)
 {
+	// HW sampler will reject bad UVs, match that here.
+	uv = any(isnan(uv) | isinf(uv)) ? float2(0, 0) : uv;
+
 	// Below taken from https://microsoft.github.io/DirectX-Specs/d3d/archive/D3D11_3_FunctionalSpec.htm#7.18.11%20LOD%20Calculations
 	// With guidance from https://pema.dev/2025/05/09/mipmaps-too-much-detail/ 
 	float2 sz;
@@ -1375,10 +1378,7 @@ PS_OUTPUT ps_main(PS_INPUT input)
 			uint4 denorm_c = uint4(C);
 			uint2 denorm_TA = uint2(float2(TA.xy) * 255.0f + 0.5f);
 			C.rb = (float2)float((denorm_c.r >> 3) | (((denorm_c.g >> 3) & 0x7u) << 5));
-			if (denorm_c.a & 0x80u)
-				C.ga = (float2)float((denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.y & 0x80u));
-			else
-				C.ga = (float2)float((denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.x & 0x80u));
+			C.ga = (float2)float((denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.x & 0x80u));
 		}
 		else if (PS_SHUFFLE_ACROSS)
 		{

@@ -4250,7 +4250,7 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 	}
 
 	// Destination Alpha Setup
-	const bool need_barrier = m_features.texture_barrier && (config.require_one_barrier || config.require_full_barrier);
+	const bool need_barrier = config.require_one_barrier || (config.require_full_barrier && m_features.texture_barrier);
 	switch (config.destination_alpha)
 	{
 		case GSHWDrawConfig::DestinationAlphaMode::Off: // No setup
@@ -4371,7 +4371,8 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 
 	GSTexture12* draw_ds_as_rt = static_cast<GSTexture12*>(m_ds_as_rt);
 
-	const bool feedback_rt = draw_rt && (config.require_one_barrier || (config.require_full_barrier && m_features.texture_barrier) || (config.tex && config.tex == config.rt));
+	const bool feedback_rt = draw_rt && (((config.require_one_barrier || (config.require_full_barrier && m_features.texture_barrier)) && (config.ps.IsFeedbackLoopRT() ||
+		config.alpha_second_pass.ps.IsFeedbackLoopRT())) || (config.tex && config.tex == config.rt));
 	const bool feedback_depth = draw_ds_as_rt != nullptr;
 
 	if (feedback_rt && !m_features.texture_barrier)
