@@ -9,6 +9,8 @@ To contribute the ClownStation project (alongside supporting PCSX2), you need sk
 - PCSX2 code (modified for 3DS use): Low accuracy, ARM optimized and ready to be coded on 3DS
 - Coding skills: Yeah, you need Coding skills to make the GUI and emulator workable
 
+Don't forget to fork this repository and merge it with this mainline, so that we get things working for make PS2 games bootable on 3DS.
+
 That way, progress gets faster and with GUI and more. Also, don't forget to support PCSX2 to keep it alive both the base and this.
 
 I'm also gonna test with homebrew apps from something simple (Hello World! text sample) to something complex (3D Platformer), and then commerical games (PS2 discs from 2000-2013).
