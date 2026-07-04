@@ -1,6 +1,5 @@
 # ClownStation
-[![Discord Server](https://img.shields.io/discord/1517269834864267415?color=%236A5ACD&label=ClownStation%20Discord&logo=discord&logoColor=white)](https://discord.gg/JckuFNn74F
-)
+[![Discord Server](https://img.shields.io/discord/1517269834864267415?color=%236A5ACD&label=ClownStation%20Discord&logo=discord&logoColor=white)](https://discord.gg/JckuFNn74F)
 ![GitHub Tag](https://img.shields.io/github/v/tag/Bastian2024/pcsx2-3ds?include_prereleases&sort=date&style=plastic&logo=github&label=Current%20version&color=99FF77)
 [![Subscribe](https://img.shields.io/badge/Subscribe-red?style=for-the-badge&label=FulpTube&labelColor=AA0000&color=FF0000)](https://fulptube.rocks/user/ClownStationOfficial)
 [![Follow](https://img.shields.io/twitter/follow/OverSucess9752?label=Follow%20me%20on%20X)](https://x.com/OverSucess9752)
