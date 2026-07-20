@@ -6,7 +6,7 @@
 [![Subreddit subscribers](https://img.shields.io/reddit/subreddit-subscribers/ClownStation?style=flat-square&logo=reddit&logoColor=ffffff&labelColor=000000&link=https%3A%2F%2Fwww.reddit.com%2Fr%2FClownStation%2F)](https://www.reddit.com/r/ClownStation/)
 
 
-ClownStation is a experimental, work-in-progress, Free and Open-Source PlayStation 2 (PS2) emulator for the Nintendo 3DS based from PCSX2. Its purpose is to emulate the PS2's hardware, using a combination of MIPS CPU [Interpreters](<https://en.wikipedia.org/wiki/Interpreter_(computing)>), [Recompilers](https://en.wikipedia.org/wiki/Dynamic_recompilation) and a [Virtual Machine](https://en.wikipedia.org/wiki/Virtual_machine) which manages hardware states and PS2 system memory. This allows you to play PS2 games on your New 3DS, with many additional features and benefits.
+ClownStation is a experimental, work-in-progress, free and open-source PlayStation 2 (PS2) emulator for the Nintendo 3DS based from PCSX2. Its purpose is to emulate the PS2's hardware, using a combination of MIPS CPU [Interpreters](<https://en.wikipedia.org/wiki/Interpreter_(computing)>), [Recompilers](https://en.wikipedia.org/wiki/Dynamic_recompilation) and a [Virtual Machine](https://en.wikipedia.org/wiki/Virtual_machine) which manages hardware states and PS2 system memory. This allows you to play PS2 games on your New 3DS, with many additional features and benefits.
 
 ## Project Details
 
@@ -28,10 +28,9 @@ See the [Contribution Guide](https://github.com/Bastian2024/pcsx2-3ds/blob/maste
 
 ## Old 3DS Compatibility
 
-No, Old 3DS systems (those around 2011-2013, before New 3DS came out by 2014) won't work for ClownStation, expect crashes and slower speeds unlike New 3DS.
+Interesting idea, but PS2 emulation on O3DS might be more harder than on N3DS, you see, I have confirmed the split for 0.0.2, and thah O3DS builds will consider the ClownStation Pillow builds by this version.
 
-
-If I could, I would make ClownStation bootable soon on Old 3DS, with the ability to run Hello World sample you make on PS2DEV, but is not recommended for heavy homebrew or commercial games (and also under another name, while still ClownStation, it's project will be split (kept on this) to 2 versions, one for Old and another for New)
+And no, if you're wondering, ClownStation Pillow working on O3DS doesn't mean that O3DS systems can get ClownStation Needle working on, because CSN is deisgned for New 3DS families, not the Old ones (despite you can experiment, but that's not a pretty good idea to do it once 0.0.2 launches)
 
 ## Code
 
